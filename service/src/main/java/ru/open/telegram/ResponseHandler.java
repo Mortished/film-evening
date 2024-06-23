@@ -1,6 +1,8 @@
 package ru.open.telegram;
 
 import java.util.Map;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
 import org.telegram.abilitybots.api.db.DBContext;
 import org.telegram.abilitybots.api.sender.SilentSender;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
@@ -10,11 +12,12 @@ import org.telegram.telegrambots.meta.api.objects.replykeyboard.ReplyKeyboard;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.ReplyKeyboardRemove;
 import ru.open.service.UserService;
 
+@Component
 public class ResponseHandler {
 
   private final SilentSender sender;
   private final Map<Long, UserState> chatStates;
-  private UserService userService; // как инициализировать?
+  private UserService userService;
 
   public ResponseHandler(SilentSender sender, DBContext db) {
     this.sender = sender;
