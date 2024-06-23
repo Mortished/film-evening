@@ -15,12 +15,12 @@ import org.telegram.abilitybots.api.objects.Reply;
 import org.telegram.telegrambots.meta.api.objects.Update;
 
 @Component
-public class PizzaBot extends AbilityBot {
+public class FilmBot extends AbilityBot {
 
   private final ResponseHandler responseHandler;
 
-  public PizzaBot(Environment environment) {
-    super(environment.getProperty("BOT_TOKEN"), "baeldungbot");
+  public FilmBot(Environment environment) {
+    super(environment.getProperty("BOT_TOKEN"), environment.getProperty("BOT_USERNAME"));
     responseHandler = new ResponseHandler(silent, db);
   }
 

@@ -17,7 +17,7 @@ public class FilmEveningApp {
     ConfigurableApplicationContext ctx = SpringApplication.run(FilmEveningApp.class, args);
     try {
       TelegramBotsApi botsApi = new TelegramBotsApi(DefaultBotSession.class);
-      botsApi.registerBot(ctx.getBean("pizzaBot", AbilityBot.class));
+      botsApi.registerBot(ctx.getBean("filmBot", AbilityBot.class));
     } catch (TelegramApiException e) {
       throw new RuntimeException(e);
     }

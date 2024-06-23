@@ -7,24 +7,18 @@ import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.Keyboard
 
 public class KeyboardFactory {
 
-  public static ReplyKeyboard getPizzaToppingsKeyboard() {
+  public static ReplyKeyboard getMainChooseKeyboard() {
     KeyboardRow row = new KeyboardRow();
-    row.add("Margherita");
-    row.add("Pepperoni");
+    row.add(Constants.ADD_FILM_BUTTON);
+    row.add(Constants.CHOOSE_FILM_BUTTON);
     return new ReplyKeyboardMarkup(List.of(row));
   }
 
-  public static ReplyKeyboard getPizzaOrDrinkKeyboard() {
+  public static ReplyKeyboard getFilmDeleteKeyboard() {
     KeyboardRow row = new KeyboardRow();
-    row.add("Pizza");
-    row.add("Drink");
+    row.add(Constants.REMOVE_YES_BUTTON);
+    row.add(Constants.REMOVE_NO_BUTTON);
     return new ReplyKeyboardMarkup(List.of(row));
   }
 
-  public static ReplyKeyboard getYesOrNo() {
-    KeyboardRow row = new KeyboardRow();
-    row.add("Yes");
-    row.add("No");
-    return new ReplyKeyboardMarkup(List.of(row));
-  }
 }

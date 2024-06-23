@@ -20,11 +20,8 @@ public class ResponseHandler {
   }
 
   public void replyToStart(long chatId) {
-    SendMessage message = new SendMessage();
-    message.setChatId(chatId);
-    message.setText(Constants.START_TEXT);
-    sender.execute(message);
-    chatStates.put(chatId, UserState.AWAITING_NAME);
+    actionWithKeyboard(chatId, Constants.START_TEXT, KeyboardFactory.getMainChooseKeyboard(),
+        UserState.AWAITING_MAIN_CHOOSE);
   }
 
   public void replyToButtons(long chatId, Message message) {
@@ -33,10 +30,9 @@ public class ResponseHandler {
     }
 
     switch (chatStates.get(chatId)) {
-      case AWAITING_NAME -> replyToName(chatId, message);
-      case FOOD_DRINK_SELECTION -> replyToFoodDrinkSelection(chatId, message);
-      case PIZZA_TOPPINGS -> replyToPizzaToppings(chatId, message);
-      case AWAITING_CONFIRMATION -> replyToOrder(chatId, message);
+      case AWAITING_MAIN_CHOOSE -> replyToMainChoose(chatId, message);
+      case AWAITING_FILM -> replyToAddFilm(chatId, message);
+      case AWAITING_FILM_REMOVE -> replyToFilmRemove(chatId, message);
       default -> unexpectedMessage(chatId);
     }
   }
@@ -57,41 +53,7 @@ public class ResponseHandler {
     sender.execute(sendMessage);
   }
 
-  private void replyToOrder(long chatId, Message message) {
-    SendMessage sendMessage = new SendMessage();
-    sendMessage.setChatId(chatId);
-    if ("yes".equalsIgnoreCase(message.getText())) {
-      sendMessage.setText("We will deliver it soon. Thank you!\nOrder another?");
-      sendMessage.setReplyMarkup(KeyboardFactory.getPizzaOrDrinkKeyboard());
-      sender.execute(sendMessage);
-      chatStates.put(chatId, UserState.FOOD_DRINK_SELECTION);
-    } else if ("no".equalsIgnoreCase(message.getText())) {
-      stopChat(chatId);
-    } else {
-      sendMessage.setText("Please select yes or no");
-      sendMessage.setReplyMarkup(KeyboardFactory.getYesOrNo());
-      sender.execute(sendMessage);
-    }
-  }
-
-  private void replyToPizzaToppings(long chatId, Message message) {
-    if ("margherita".equalsIgnoreCase(message.getText())) {
-      promptWithKeyboardForState(chatId,
-          "You selected Margherita Pizza.\nWe will deliver it soon. Thank you!\nOrder again?",
-          KeyboardFactory.getYesOrNo(), UserState.AWAITING_CONFIRMATION);
-    } else if ("pepperoni".equalsIgnoreCase(message.getText())) {
-      promptWithKeyboardForState(chatId, "We finished the Pepperoni Pizza.\nSelect another Topping",
-          KeyboardFactory.getPizzaToppingsKeyboard(), UserState.PIZZA_TOPPINGS);
-    } else {
-      SendMessage sendMessage = new SendMessage();
-      sendMessage.setChatId(chatId);
-      sendMessage.setText("We don't sell " + message.getText() + " Pizza.\nSelect the toppings!");
-      sendMessage.setReplyMarkup(KeyboardFactory.getPizzaToppingsKeyboard());
-      sender.execute(sendMessage);
-    }
-  }
-
-  private void promptWithKeyboardForState(long chatId, String text, ReplyKeyboard YesOrNo,
+  private void actionWithKeyboard(long chatId, String text, ReplyKeyboard YesOrNo,
       UserState awaitingReorder) {
     SendMessage sendMessage = new SendMessage();
     sendMessage.setChatId(chatId);
@@ -101,34 +63,59 @@ public class ResponseHandler {
     chatStates.put(chatId, awaitingReorder);
   }
 
-  private void replyToFoodDrinkSelection(long chatId, Message message) {
+  private void replyToMainChoose(long chatId, Message message) {
     SendMessage sendMessage = new SendMessage();
     sendMessage.setChatId(chatId);
-    if ("drink".equalsIgnoreCase(message.getText())) {
-      sendMessage.setText("We don't sell drinks.\nBring your own drink!! :)");
-      sendMessage.setReplyMarkup(KeyboardFactory.getPizzaOrDrinkKeyboard());
+    if (Constants.ADD_FILM_BUTTON.equalsIgnoreCase(message.getText())) {
+      sendMessage.setText(Constants.ADD_FILM_DESCRIPTION);
+      sendMessage.setReplyMarkup(new ReplyKeyboardRemove(true));
       sender.execute(sendMessage);
-    } else if ("pizza".equalsIgnoreCase(message.getText())) {
-      sendMessage.setText("We love Pizza in here.\nSelect the toppings!");
-      sendMessage.setReplyMarkup(KeyboardFactory.getPizzaToppingsKeyboard());
+      chatStates.put(chatId, UserState.AWAITING_FILM);
+    } else if (Constants.CHOOSE_FILM_BUTTON.equalsIgnoreCase(message.getText())) {
+      sendMessage.setText("You get John Wik: Chapter 4!");
+      sendMessage.setReplyMarkup(KeyboardFactory.getFilmDeleteKeyboard());
       sender.execute(sendMessage);
-      chatStates.put(chatId, UserState.PIZZA_TOPPINGS);
+      chatStates.put(chatId, UserState.AWAITING_FILM_REMOVE);
     } else {
-      sendMessage.setText(
-          "We don't sell " + message.getText() + ". Please select from the options below.");
-      sendMessage.setReplyMarkup(KeyboardFactory.getPizzaOrDrinkKeyboard());
+      sendMessage.setText("Please select from the options below.");
+      sendMessage.setReplyMarkup(KeyboardFactory.getMainChooseKeyboard());
       sender.execute(sendMessage);
     }
   }
 
-  private void replyToName(long chatId, Message message) {
-    promptWithKeyboardForState(chatId,
-        "Hello " + message.getText() + ". What would you like to have?",
-        KeyboardFactory.getPizzaOrDrinkKeyboard(),
-        UserState.FOOD_DRINK_SELECTION);
+  private void replyToFilmRemove(long chatId, Message message) {
+    SendMessage sendMessage = new SendMessage();
+    sendMessage.setChatId(chatId);
+    if (Constants.REMOVE_YES_BUTTON.equalsIgnoreCase(message.getText())) {
+      sendMessage.setText(Constants.EXIT_MESSAGE);
+      chatStates.remove(chatId);
+      //TODO add remove from database
+      sendMessage.setReplyMarkup(new ReplyKeyboardRemove(true));
+      sender.execute(sendMessage);
+    } else if (Constants.REMOVE_NO_BUTTON.equalsIgnoreCase(message.getText())) {
+      sendMessage.setText(Constants.REMOVE_NO_DESCRIPTION);
+      sendMessage.setReplyMarkup(KeyboardFactory.getMainChooseKeyboard());
+      sender.execute(sendMessage);
+      chatStates.put(chatId, UserState.AWAITING_FILM_REMOVE);
+    } else {
+      sendMessage.setText("Please select from the options below.");
+      sendMessage.setReplyMarkup(KeyboardFactory.getFilmDeleteKeyboard());
+      sender.execute(sendMessage);
+    }
+  }
+
+  private void replyToAddFilm(long chatId, Message message) {
+    SendMessage sendMessage = new SendMessage();
+    sendMessage.setChatId(chatId);
+    sendMessage.setReplyMarkup(KeyboardFactory.getMainChooseKeyboard());
+    sendMessage.setText(Constants.SAVE_FILM);
+    //TODO add save to database
+    sender.execute(sendMessage);
+    chatStates.put(chatId, UserState.AWAITING_MAIN_CHOOSE);
   }
 
   public boolean userIsActive(Long chatId) {
     return chatStates.containsKey(chatId);
   }
+
 }
