@@ -14,8 +14,8 @@ public class Constants {
   public static final String SAVE_FILM = "Film successfully saved!";
 
   public static final String REMOVE_YES_BUTTON = "Yes, I will watch Film";
-  public static final String REMOVE_NO_BUTTON = "No, I will take another";
-  public static final String REMOVE_NO_DESCRIPTION = "Okey, let`s take another Film!";
+  public static final String REMOVE_NO_BUTTON = "No, I will watch another";
+  public static final String REMOVE_NO_DESCRIPTION = "Okey, let`s watch another Film!";
 
   public static final String EXIT_MESSAGE = "Thank you for your interaction. See you soon!\nPress /start to interact again";
 
