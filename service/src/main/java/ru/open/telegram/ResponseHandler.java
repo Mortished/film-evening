@@ -8,11 +8,13 @@ import org.telegram.telegrambots.meta.api.objects.Message;
 import org.telegram.telegrambots.meta.api.objects.User;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.ReplyKeyboard;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.ReplyKeyboardRemove;
+import ru.open.service.UserService;
 
 public class ResponseHandler {
 
   private final SilentSender sender;
   private final Map<Long, UserState> chatStates;
+  private UserService userService; // как инициализировать?
 
   public ResponseHandler(SilentSender sender, DBContext db) {
     this.sender = sender;
@@ -20,7 +22,7 @@ public class ResponseHandler {
   }
 
   public void replyToStart(long chatId, User user) {
-
+    userService.registerOrGetUser(user.getUserName());
     actionWithKeyboard(chatId, Constants.START_TEXT, KeyboardFactory.getMainChooseKeyboard(),
         UserState.AWAITING_MAIN_CHOOSE);
   }
@@ -41,14 +43,14 @@ public class ResponseHandler {
   private void unexpectedMessage(long chatId) {
     SendMessage sendMessage = new SendMessage();
     sendMessage.setChatId(chatId);
-    sendMessage.setText("I did not expect that.");
+    sendMessage.setText(Constants.UNKNOWN_MESSAGE);
     sender.execute(sendMessage);
   }
 
   private void stopChat(long chatId) {
     SendMessage sendMessage = new SendMessage();
     sendMessage.setChatId(chatId);
-    sendMessage.setText("Thank you for your order. See you soon!\nPress /start to order again");
+    sendMessage.setText(Constants.EXIT_MESSAGE);
     chatStates.remove(chatId);
     sendMessage.setReplyMarkup(new ReplyKeyboardRemove(true));
     sender.execute(sendMessage);
@@ -73,12 +75,13 @@ public class ResponseHandler {
       sender.execute(sendMessage);
       chatStates.put(chatId, UserState.AWAITING_FILM);
     } else if (Constants.CHOOSE_FILM_BUTTON.equalsIgnoreCase(message.getText())) {
+      //TODO add random logic
       sendMessage.setText("You get John Wik: Chapter 4!");
       sendMessage.setReplyMarkup(KeyboardFactory.getFilmDeleteKeyboard());
       sender.execute(sendMessage);
       chatStates.put(chatId, UserState.AWAITING_FILM_REMOVE);
     } else {
-      sendMessage.setText("Please select from the options below.");
+      sendMessage.setText(Constants.CHOOSE_FROM_DIALOG_MSG);
       sendMessage.setReplyMarkup(KeyboardFactory.getMainChooseKeyboard());
       sender.execute(sendMessage);
     }
@@ -99,7 +102,7 @@ public class ResponseHandler {
       sender.execute(sendMessage);
       chatStates.put(chatId, UserState.AWAITING_FILM_REMOVE);
     } else {
-      sendMessage.setText("Please select from the options below.");
+      sendMessage.setText(Constants.CHOOSE_FROM_DIALOG_MSG);
       sendMessage.setReplyMarkup(KeyboardFactory.getFilmDeleteKeyboard());
       sender.execute(sendMessage);
     }

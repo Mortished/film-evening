@@ -15,7 +15,10 @@ public class Constants {
 
   public static final String REMOVE_YES_BUTTON = "Yes, I will watch Film";
   public static final String REMOVE_NO_BUTTON = "No, I will watch another";
-  public static final String REMOVE_NO_DESCRIPTION = "Okey, let`s watch another Film!";
+  public static final String REMOVE_NO_DESCRIPTION = "Okay, let`s watch another Film!";
+
+  public static final String UNKNOWN_MESSAGE = "I did not expect that.";
+  public static final String CHOOSE_FROM_DIALOG_MSG = "Please select from the options below.";
 
   public static final String EXIT_MESSAGE = "Thank you for your interaction. See you soon!\nPress /start to interact again";
 
