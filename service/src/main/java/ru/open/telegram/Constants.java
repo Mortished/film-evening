@@ -19,5 +19,4 @@ public class Constants {
 
   public static final String EXIT_MESSAGE = "Thank you for your interaction. See you soon!\nPress /start to interact again";
 
-
 }

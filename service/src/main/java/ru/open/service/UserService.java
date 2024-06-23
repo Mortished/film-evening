@@ -15,8 +15,9 @@ public class UserService {
   private final UserRepository userRepository;
   private final ModelMapper modelMapper;
 
-  public User createUser(String login) {
-    return new User();
+  public User registerOrGetUser(String login) {
+    return userRepository.findByLogin(login)
+        .orElse(userRepository.save(modelMapper.map(login, User.class)));
   }
 
 }

@@ -31,7 +31,7 @@ public class FilmBot extends AbilityBot {
         .info(Constants.START_DESCRIPTION)
         .locality(USER)
         .privacy(PUBLIC)
-        .action(ctx -> responseHandler.replyToStart(ctx.chatId()))
+        .action(ctx -> responseHandler.replyToStart(ctx.chatId(), ctx.user()))
         .build();
   }
 

@@ -5,9 +5,9 @@ import org.telegram.abilitybots.api.db.DBContext;
 import org.telegram.abilitybots.api.sender.SilentSender;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 import org.telegram.telegrambots.meta.api.objects.Message;
+import org.telegram.telegrambots.meta.api.objects.User;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.ReplyKeyboard;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.ReplyKeyboardRemove;
-
 
 public class ResponseHandler {
 
@@ -19,7 +19,8 @@ public class ResponseHandler {
     chatStates = db.getMap(Constants.CHAT_STATES);
   }
 
-  public void replyToStart(long chatId) {
+  public void replyToStart(long chatId, User user) {
+
     actionWithKeyboard(chatId, Constants.START_TEXT, KeyboardFactory.getMainChooseKeyboard(),
         UserState.AWAITING_MAIN_CHOOSE);
   }
