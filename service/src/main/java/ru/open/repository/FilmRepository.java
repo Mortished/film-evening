@@ -12,7 +12,7 @@ public interface FilmRepository extends JpaRepository<Film, Long> {
 
   Film findFilmByUserLoginAndName(String userLogin, String name);
 
-  @Query("select f from Film f where f.user.login = ?1 order by RAND() LIMIT 1")
+  @Query("select f from Film f where f.user.login = ?1 order by RANDOM() LIMIT 1")
   Optional<Film> findRandomFilmByUserLogin(String userLogin);
 
 }
