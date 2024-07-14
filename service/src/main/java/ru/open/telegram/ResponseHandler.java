@@ -97,7 +97,7 @@ public class ResponseHandler {
 
       selectedFilm.put(login, film);
 
-      sendMessage.setText("You get: " + film);
+      sendMessage.setText("HERE WE GO:\n" + film);
       sendMessage.setReplyMarkup(KeyboardFactory.getFilmDeleteKeyboard());
       sender.execute(sendMessage);
       chatStates.put(chatId, UserState.AWAITING_FILM_REMOVE);
