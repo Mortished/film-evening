@@ -10,6 +10,7 @@ import org.telegram.telegrambots.meta.api.objects.replykeyboard.ReplyKeyboard;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.ReplyKeyboardRemove;
 import ru.open.service.FilmService;
 import ru.open.service.UserService;
+import ru.open.utils.Constants;
 
 public class ResponseHandler {
 
@@ -75,6 +76,7 @@ public class ResponseHandler {
   private void replyToMainChoose(long chatId, Message message) {
     SendMessage sendMessage = new SendMessage();
     sendMessage.setChatId(chatId);
+
     if (Constants.ADD_FILM_BUTTON.equalsIgnoreCase(message.getText())) {
       sendMessage.setText(Constants.ADD_FILM_DESCRIPTION);
       sendMessage.setReplyMarkup(new ReplyKeyboardRemove(true));
@@ -85,9 +87,17 @@ public class ResponseHandler {
       String login = message.getFrom().getUserName();
       String film = filmService.getRandomUserFilm(login);
 
+      if (film.equals(Constants.NO_FILM_FOR_USER)) {
+        sendMessage.setText(Constants.NO_FILM_FOR_USER);
+        sendMessage.setReplyMarkup(KeyboardFactory.getMainChooseKeyboard());
+        sender.execute(sendMessage);
+        chatStates.put(chatId, UserState.AWAITING_MAIN_CHOOSE);
+        return;
+      }
+
       selectedFilm.put(login, film);
 
-      sendMessage.setText("You get " + film + "!");
+      sendMessage.setText("You get: " + film);
       sendMessage.setReplyMarkup(KeyboardFactory.getFilmDeleteKeyboard());
       sender.execute(sendMessage);
       chatStates.put(chatId, UserState.AWAITING_FILM_REMOVE);
@@ -95,6 +105,7 @@ public class ResponseHandler {
       sendMessage.setText(Constants.CHOOSE_FROM_DIALOG_MSG);
       sendMessage.setReplyMarkup(KeyboardFactory.getMainChooseKeyboard());
       sender.execute(sendMessage);
+      chatStates.put(chatId, UserState.AWAITING_MAIN_CHOOSE);
     }
   }
 
@@ -104,16 +115,18 @@ public class ResponseHandler {
     if (Constants.REMOVE_YES_BUTTON.equalsIgnoreCase(message.getText())) {
       sendMessage.setText(Constants.EXIT_MESSAGE);
       chatStates.remove(chatId);
-      //TODO add remove from database
+
       String login = message.getFrom().getUserName();
       filmService.deleteFilm(login, selectedFilm.get(login));
+      selectedFilm.remove(login);
+
       sendMessage.setReplyMarkup(new ReplyKeyboardRemove(true));
       sender.execute(sendMessage);
     } else if (Constants.REMOVE_NO_BUTTON.equalsIgnoreCase(message.getText())) {
       sendMessage.setText(Constants.REMOVE_NO_DESCRIPTION);
       sendMessage.setReplyMarkup(KeyboardFactory.getMainChooseKeyboard());
       sender.execute(sendMessage);
-      chatStates.put(chatId, UserState.AWAITING_FILM_REMOVE);
+      chatStates.put(chatId, UserState.AWAITING_MAIN_CHOOSE);
     } else {
       sendMessage.setText(Constants.CHOOSE_FROM_DIALOG_MSG);
       sendMessage.setReplyMarkup(KeyboardFactory.getFilmDeleteKeyboard());

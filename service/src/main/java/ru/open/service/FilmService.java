@@ -1,6 +1,7 @@
 package ru.open.service;
 
 import java.util.List;
+import java.util.Optional;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -8,6 +9,7 @@ import ru.open.entity.Film;
 import ru.open.entity.User;
 import ru.open.repository.FilmRepository;
 import ru.open.repository.UserRepository;
+import ru.open.utils.Constants;
 
 @Slf4j
 @Service
@@ -36,7 +38,7 @@ public class FilmService {
   }
 
   public void deleteFilm(String login, String film) {
-    User userEntity = userRepository.findByLogin(login)
+    userRepository.findByLogin(login)
         .orElseThrow(RuntimeException::new);
 
     Film filmEntity = filmRepository.findFilmByUserLoginAndName(login, film);
@@ -44,10 +46,16 @@ public class FilmService {
   }
 
   public String getRandomUserFilm(String login) {
-    User userEntity = userRepository.findByLogin(login)
+    userRepository.findByLogin(login)
         .orElseThrow(RuntimeException::new);
 
-    return filmRepository.getRandomFilmByUserLogin(login).getName();
+    Optional<Film> film = filmRepository.findRandomFilmByUserLogin(login);
+
+    if (film.isPresent()) {
+      return film.get().getName();
+    }
+
+    return Constants.NO_FILM_FOR_USER;
   }
 
 }

@@ -1,4 +1,4 @@
-package ru.open.telegram;
+package ru.open.utils;
 
 public class Constants {
 
@@ -21,5 +21,7 @@ public class Constants {
   public static final String CHOOSE_FROM_DIALOG_MSG = "Please select from the options below.";
 
   public static final String EXIT_MESSAGE = "Thank you for your interaction. See you soon!\nPress /start to interact again";
+
+  public static final String NO_FILM_FOR_USER = "No film for user!";
 
 }
