@@ -1,27 +1,30 @@
 package ru.open.telegram;
 
+import java.util.HashMap;
 import java.util.Map;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Component;
-import org.telegram.abilitybots.api.db.DBContext;
 import org.telegram.abilitybots.api.sender.SilentSender;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 import org.telegram.telegrambots.meta.api.objects.Message;
 import org.telegram.telegrambots.meta.api.objects.User;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.ReplyKeyboard;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.ReplyKeyboardRemove;
+import ru.open.service.FilmService;
 import ru.open.service.UserService;
 
-@Component
 public class ResponseHandler {
 
   private final SilentSender sender;
   private final Map<Long, UserState> chatStates;
-  private UserService userService;
+  private final Map<String, String> selectedFilm;
+  private final UserService userService;
+  private final FilmService filmService;
 
-  public ResponseHandler(SilentSender sender, DBContext db) {
-    this.sender = sender;
-    chatStates = db.getMap(Constants.CHAT_STATES);
+  public ResponseHandler(FilmBot filmBot, UserService userService, FilmService filmService) {
+    this.sender = filmBot.silent();
+    chatStates = filmBot.db().getMap(Constants.CHAT_STATES);
+    selectedFilm = new HashMap<>();
+    this.userService = userService;
+    this.filmService = filmService;
   }
 
   public void replyToStart(long chatId, User user) {
@@ -60,13 +63,13 @@ public class ResponseHandler {
   }
 
   private void actionWithKeyboard(long chatId, String text, ReplyKeyboard YesOrNo,
-      UserState awaitingReorder) {
+      UserState state) {
     SendMessage sendMessage = new SendMessage();
     sendMessage.setChatId(chatId);
     sendMessage.setText(text);
     sendMessage.setReplyMarkup(YesOrNo);
     sender.execute(sendMessage);
-    chatStates.put(chatId, awaitingReorder);
+    chatStates.put(chatId, state);
   }
 
   private void replyToMainChoose(long chatId, Message message) {
@@ -78,8 +81,13 @@ public class ResponseHandler {
       sender.execute(sendMessage);
       chatStates.put(chatId, UserState.AWAITING_FILM);
     } else if (Constants.CHOOSE_FILM_BUTTON.equalsIgnoreCase(message.getText())) {
-      //TODO add random logic
-      sendMessage.setText("You get John Wik: Chapter 4!");
+
+      String login = message.getFrom().getUserName();
+      String film = filmService.getRandomUserFilm(login);
+
+      selectedFilm.put(login, film);
+
+      sendMessage.setText("You get " + film + "!");
       sendMessage.setReplyMarkup(KeyboardFactory.getFilmDeleteKeyboard());
       sender.execute(sendMessage);
       chatStates.put(chatId, UserState.AWAITING_FILM_REMOVE);
@@ -97,6 +105,8 @@ public class ResponseHandler {
       sendMessage.setText(Constants.EXIT_MESSAGE);
       chatStates.remove(chatId);
       //TODO add remove from database
+      String login = message.getFrom().getUserName();
+      filmService.deleteFilm(login, selectedFilm.get(login));
       sendMessage.setReplyMarkup(new ReplyKeyboardRemove(true));
       sender.execute(sendMessage);
     } else if (Constants.REMOVE_NO_BUTTON.equalsIgnoreCase(message.getText())) {
@@ -116,7 +126,7 @@ public class ResponseHandler {
     sendMessage.setChatId(chatId);
     sendMessage.setReplyMarkup(KeyboardFactory.getMainChooseKeyboard());
     sendMessage.setText(Constants.SAVE_FILM);
-    //TODO add save to database
+    filmService.saveFilm(message.getFrom().getUserName(), message.getText()); //save to database
     sender.execute(sendMessage);
     chatStates.put(chatId, UserState.AWAITING_MAIN_CHOOSE);
   }

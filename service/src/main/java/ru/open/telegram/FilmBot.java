@@ -5,6 +5,7 @@ import static org.telegram.abilitybots.api.objects.Privacy.PUBLIC;
 import static org.telegram.abilitybots.api.util.AbilityUtils.getChatId;
 
 import java.util.function.BiConsumer;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.env.Environment;
 import org.springframework.stereotype.Component;
 import org.telegram.abilitybots.api.bot.AbilityBot;
@@ -17,11 +18,15 @@ import org.telegram.telegrambots.meta.api.objects.Update;
 @Component
 public class FilmBot extends AbilityBot {
 
-  private final ResponseHandler responseHandler;
+  private ResponseHandler responseHandler;
 
   public FilmBot(Environment environment) {
     super(environment.getProperty("BOT_TOKEN"), environment.getProperty("BOT_USERNAME"));
-    responseHandler = new ResponseHandler(silent, db);
+  }
+
+  @Autowired
+  public void setResponseHandler(ResponseHandler responseHandler) {
+    this.responseHandler = responseHandler;
   }
 
   public Ability startBot() {

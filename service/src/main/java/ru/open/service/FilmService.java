@@ -4,8 +4,8 @@ import java.util.List;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
-import org.telegram.telegrambots.meta.api.objects.User;
 import ru.open.entity.Film;
+import ru.open.entity.User;
 import ru.open.repository.FilmRepository;
 import ru.open.repository.UserRepository;
 
@@ -17,14 +17,14 @@ public class FilmService {
   private final FilmRepository filmRepository;
   private final UserRepository userRepository;
 
-  public List<String> getAllUserFilms(User user) {
-    return filmRepository.findFilmsByUserLogin(user.getUserName()).stream()
+  public List<String> getAllUserFilms(String login) {
+    return filmRepository.findFilmsByUserLogin(login).stream()
         .map(Film::getName)
         .toList();
   }
 
-  public Film saveFilm(User user, String film) {
-    ru.open.entity.User userEntity = userRepository.findById(user.getId())
+  public void saveFilm(String login, String film) {
+    User userEntity = userRepository.findByLogin(login)
         .orElseThrow(RuntimeException::new);
 
     Film filmEntity = Film.builder()
@@ -32,15 +32,22 @@ public class FilmService {
         .user(userEntity)
         .build();
 
-    return filmRepository.save(filmEntity);
+    filmRepository.save(filmEntity);
   }
 
-  public void deleteFilm(User user, String film) {
-    ru.open.entity.User userEntity = userRepository.findById(user.getId())
+  public void deleteFilm(String login, String film) {
+    User userEntity = userRepository.findByLogin(login)
         .orElseThrow(RuntimeException::new);
 
-    Film filmEntity = filmRepository.findFilmsByUserLoginAndName(user.getUserName(), film);
+    Film filmEntity = filmRepository.findFilmByUserLoginAndName(login, film);
     filmRepository.delete(filmEntity);
+  }
+
+  public String getRandomUserFilm(String login) {
+    User userEntity = userRepository.findByLogin(login)
+        .orElseThrow(RuntimeException::new);
+
+    return filmRepository.getRandomFilmByUserLogin(login).getName();
   }
 
 }

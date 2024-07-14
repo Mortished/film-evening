@@ -1,5 +1,6 @@
 package ru.open.service;
 
+import java.util.Optional;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.modelmapper.ModelMapper;
@@ -15,9 +16,15 @@ public class UserService {
   private final UserRepository userRepository;
   private final ModelMapper modelMapper;
 
-  public User registerOrGetUser(String login) {
-    return userRepository.findByLogin(login)
-        .orElse(userRepository.save(modelMapper.map(login, User.class)));
+  public void registerOrGetUser(String login) {
+    Optional<User> user = userRepository.findByLogin(login);
+
+    if (user.isEmpty()) {
+      userRepository.save(User.builder()
+          .login(login)
+          .build());
+    }
+
   }
 
 }
